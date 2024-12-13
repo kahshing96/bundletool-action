@@ -2,7 +2,7 @@ name: 'BundleTool Action'
 description: 'This action will help you convert your aab to signed apk file.'
 author: 'Mukesh Solanki'
 branding:
-  icon: 'check-circle'  
+  icon: 'check-circle'
   color: 'green'
 
 inputs:
@@ -25,6 +25,9 @@ inputs:
     description: 'The version of bundletool to use'
     required: false
     default: 'latest'
+  githubToken:
+    description: 'The github token for preventing rate limit'
+    required: false
 
 runs:
   using: 'node16'

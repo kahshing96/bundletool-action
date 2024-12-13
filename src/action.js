@@ -6,12 +6,17 @@ const httpm = require("@actions/http-client");
 const fs = require("fs");
 const path = require("path");
 
-async function getBundletoolInfo(tag) {
+async function getBundletoolInfo(tag, githubToken = null) {
     const version = (tag && tag !== "latest") ? `tags/${tag}` : "latest";
     const url = `https://api.github.com/repos/google/bundletool/releases/${version}`;
-    
+
+    let headers = {};
+    if (githubToken) {
+        headers["Authorization"] = `Bearer ${githubToken}`;
+    }
+
     const http = new httpm.HttpClient("bundletool-action");
-    const response = await http.getJson(url);
+    const response = await http.getJson(url, headers);
 
     if (response.statusCode !== 200) {
         if (response.statusCode === 404) {
@@ -41,6 +46,7 @@ async function run() {
         const KEYSTORE_ALIAS = core.getInput("keystoreAlias");
         const KEY_PASSWORD = core.getInput("keyPassword");
         const BUNDLETOOL_VERSION = core.getInput("bundletoolVersion");
+        const GITHUB_TOKEN = core.getInput("githubToken");
 
         const bundleToolPath = `${process.env.HOME}/bundletool`;
         const bundleToolFile = `${bundleToolPath}/bundletool.jar`;
@@ -49,7 +55,7 @@ async function run() {
 
         core.info(`${bundleToolPath} directory created`);
 
-        const { tagName, downloadUrl } = await getBundletoolInfo(BUNDLETOOL_VERSION);
+        const { tagName, downloadUrl } = await getBundletoolInfo(BUNDLETOOL_VERSION, GITHUB_TOKEN);
 
         core.info(`${tagName} version of bundletool will be used`);
 
@@ -69,7 +75,7 @@ async function run() {
 
         const signingKey = "signingKey.jks";
 
-        fs.writeFileSync(signingKey, BASE64_KEYSTORE, "base64", function(err) {
+        fs.writeFileSync(signingKey, BASE64_KEYSTORE, "base64", function (err) {
             if (err) {
                 core.info(`Please check the key ${err}`);
             } else {
